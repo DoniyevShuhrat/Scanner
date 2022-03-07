@@ -19,16 +19,16 @@ namespace Scanner.ViewModel
         public ICollectionView ScannerSourceCollection => ScannerItemsCollection.View;
 
         TitulService ObjTitulService;
-        ObservableCollection<Titul> collection;
-
+        ObservableCollection<Titul> _collection;
+        public ObservableCollection<Titul> Collection { get { return _collection; } set { _collection = value; OnPropertyChanged(nameof(Collection)); } }
         public ScannerViewModel()
         {
             ObjTitulService = new TitulService();
             LoadData();
             //collection = new ObservableCollection<Titul>(ObjTitulService.GetTituls());
-            collection = new ObservableCollection<Titul>(Tituls);
-            ScannerItemsCollection = new CollectionViewSource { Source = collection };
-            MessageBox.Show(collection[0].FirstMainScienceQuestions[0].KeyA.ToString(), "ScannerView");
+            Collection = new ObservableCollection<Titul>(Tituls);
+            ScannerItemsCollection = new CollectionViewSource { Source = Collection };
+            MessageBox.Show(Collection[0].FirstMainScienceQuestions[0].KeyA.ToString(), "ScannerView");
             LoadData();
         }
 
@@ -39,19 +39,19 @@ namespace Scanner.ViewModel
             if (PropertyChanged != null)
                 PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
         }
-        
+
         private List<Titul> _tituls;
         public List<Titul> Tituls
         {
             get { return _tituls; }
             set { _tituls = value; OnPropertyChanged("Tituls"); }
         }
-        
+
         private void LoadData()
         {
             Tituls = ObjTitulService.GetTituls();
         }
-        
+
         // DeleteAll button Command
         private ICommand _deleteAllTitulsCommand;
         public ICommand DeleteAllTitulsCommand
@@ -67,27 +67,27 @@ namespace Scanner.ViewModel
                 return _deleteAllTitulsCommand;
             }
         }
-        
+
         private void ShowDeleteAll()
         {
             MessageBox.Show("DeleteAll in ScannerViewModel");
         }
-        
+
         // Delete button Command
         private ICommand _deleteTitulCommand;
         public ICommand DeleteTitulCommand
         {
             get
             {
-                if(_deleteTitulCommand == null)
+                if (_deleteTitulCommand == null)
                 {
-                    _deleteTitulCommand = new RelayCommand(param => { ShowDelete(); });
+                    _deleteTitulCommand = new RelayCommand(param => { ShowDelete(param); });
                 }
                 return _deleteTitulCommand;
             }
         }
-        
-        private void ShowDelete()
+
+        private void ShowDelete(object param)
         {
             MessageBox.Show(_selectedIndexCommand.ToString() + " " + Tituls.Count.ToString(), "Delete in ScannerViewModel");
             if (_selectedIndexCommand != null && Tituls.Count != 0)
@@ -99,7 +99,9 @@ namespace Scanner.ViewModel
                 }
                 MessageBox.Show(buff, "Jami Element(Delete in ScannerViewModel)");
                 buff = String.Empty;
-                Tituls.RemoveAt((int)_selectedIndexCommand);
+
+                Collection.Remove((Titul)param);
+
                 //ObjTitulService.DeleteTitul((int)_selectedIndexCommand);
                 foreach (Titul titul in Tituls)
                 {
@@ -110,8 +112,8 @@ namespace Scanner.ViewModel
             }
             ScannerItemsCollection.View.Refresh();
         }
-        
-        
+
+
         private int _selectedIndexCommand;
         public int SelectedIndexCommand
         {
